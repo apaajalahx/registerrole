@@ -5,7 +5,7 @@ just register and auth with role access.
 ```bash
 npm run start
 ```
-## DEV 
+## DEV (NODEMON)
 ```bash
 npm run dev
 ```
