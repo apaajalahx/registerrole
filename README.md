@@ -1,2 +1,1 @@
-# registerrole
-ya gitu
+just register and auth with role access.
