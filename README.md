@@ -2,9 +2,13 @@ just register and auth with role access.
 
 
 ## RUN 
-`npm run start`
+```bash
+npm run start
+```
 ## DEV 
-`npm run dev`
+```bash
+npm run dev
+```
 
 ## API DOCUMENT.... 
 
