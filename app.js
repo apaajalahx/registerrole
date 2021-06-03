@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 const db = require('./app/models/index');
-// this fucking shit will drop db.
+
 db.sequelize.sync({force:false}).then(()=>{
     console.log("drop and re-sync db");
 });
