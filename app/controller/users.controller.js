@@ -44,7 +44,7 @@ exports.Auth = (req, res) => {
             if(data.status=='pending'){
                 mail_massage.email = data.email;
                 mail_massage.subject = 'Please Actived Your Account';
-                mail_massage.activation = users_helper.url + "/verify/" + users_helper.create_activation(data.id, data.password);
+                mail_massage.activation = users_helper.url + "/api/v1/verify/" + users_helper.create_activation(data.id, data.password);
                 mail_massage.letter = 'activation.html';
                 massage = mail_massage.massage();
                 mail_helper.Mail(req.body.email,mail_massage.subject,massage).then(() => {
