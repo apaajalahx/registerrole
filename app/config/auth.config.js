@@ -1,3 +1,4 @@
 module.exports = {
-    secret: process.env.SECRET || "registerrole"
-} 
+    secret: process.env.AUTH_SECRET || "registerrole",
+    refresh: process.env.AUTH_REFRESH_SECRET || "accessrefresh"
+}

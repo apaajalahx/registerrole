@@ -16,9 +16,11 @@ module.exports = {
         email: "admin@example.com",
         phone: "081288888",
         password: bcryp.hashSync("admin123"),
+        status: 'pending',
+        roleId: 1,
         createdAt: new Date(),
         updatedAt: new Date()
-    }]);
+    }], {});
   },
 
   down: async (queryInterface, Sequelize) => {

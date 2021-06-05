@@ -1,17 +1,13 @@
-const dbconf = require('../config/db.config');
 const Sequelize = require('sequelize');
+const env = process.env.NODE_ENV || 'development';
+const config = require('../../config/config.js')[env];
+let sequelize;
+if (config.use_env_variable) {
+  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+} else {
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
+}
 
-const sequelize = new Sequelize(dbconf.DB,dbconf.USER,dbconf.PASSWORD,{
-    host: dbconf.HOST,
-    dialect: dbconf.dialect,
-    operatorAliases: false,
-    pool: {
-        max: dbconf.pool.max,
-        min: dbconf.pool.min,
-        acquire: dbconf.pool.acquire,
-        idle: dbconf.pool.idle
-    }
-});
 /** 
  * 
  * check if connection and authenticate to database success.
@@ -26,11 +22,11 @@ const data = {}
 data.sequelize = sequelize;
 data.Sequelize = Sequelize;
 data.users = require('./users.models')(sequelize,Sequelize);
-data.roles = require('./role.models')(sequelize,Sequelize);
+data.roles = require('./roles.models')(sequelize,Sequelize);
 data.roles.hasMany(data.users, { as: "users"});
 data.users.belongsTo(data.roles, {
-    foreignKey: "rolesid",
-    as:"role"
+    foreignKey: "roleId",
+    as: 'role'
 });
 
 module.exports = data;

@@ -1,13 +1,18 @@
 const fs = require('fs');
-const mail = {};
+let mail = {};
 // here your subject
 let dir = __dirname;
-mail.subject = "Change password request.";
-mail.massage = (email, password) => {
-    data = fs.readFileSync(dir + "/mail.html", 'utf-8').toString();
+mail.subject = "";
+mail.password = "";
+mail.email = "";
+mail.activation = "";
+mail.letter = "" || "mail.html";
+mail.massage = () => {
+    data = fs.readFileSync(dir + "/" + mail.letter, 'utf-8').toString();
     data = data.replace('{subject}',mail.subject);
-    data = data.replace('{email}', email);
-    data = data.replace('{password}', password);
+    data = data.replace('{email}', mail.email);
+    data = data.replace('{activation}', mail.activation)
+    data = data.replace('{password}', mail.password);
     return data;
 }
 

@@ -3,13 +3,14 @@ const { users,roles } = require('../models/index');
 const mail_helper = require('../helper/mail.helper');
 const jwt_helper = require('../helper/jwt.helper');
 const mail_massage = require('../../resource/mail/mail');
+const users_helper = require('../helper/users.helper');
 exports.Register = (req, res) => {
     const user = {
         name: req.body.name,
         email: req.body.email,
         phone: req.body.phone,
         password: bcryp.hashSync(req.body.password),
-        rolesid: 2 // default member
+        roleId: 2 // default member
     }
     users.create(user).then( data => {
         res.send(data);
@@ -40,33 +41,96 @@ exports.Auth = (req, res) => {
     }).then((data) => {
         let compare = bcryp.compareSync(req.body.password, data.password);
         if(compare){
-            let req_token = {
-                id: data.id,
-                email: data.email,
-                role: data.role.name
-                }
-            let token = jwt_helper.SJwt(req_token);
-            res.status(200).send({
-                massage: "success login",
-                auth: data.email,
-                role: data.role.name,
-                token: token
-            });
+            if(data.status=='pending'){
+                mail_massage.email = data.email;
+                mail_massage.subject = 'Please Actived Your Account';
+                mail_massage.activation = users_helper.url + "/verify/" + users_helper.create_activation(data.id, data.password);
+                mail_massage.letter = 'activation.html';
+                massage = mail_massage.massage();
+                mail_helper.Mail(req.body.email,mail_massage.subject,massage).then(() => {
+                    res.status(200).send({
+                        massage: 'success',
+                        info: 'your activated url has been sent to your email'
+                    });
+                }).catch((error) => {
+                    console.log(error)
+                    res.status(500).send({
+                        massage: error.massage || "Internal Server Error"
+                    });
+                });
+            } else if(data.status=='banned') {
+                res.status(500).send({
+                    massage: 'your account has been banned'
+                });
+            } else if(data.status=='active') {
+                let req_token = {
+                    id: data.id,
+                    email: data.email,
+                    role: data.role.name
+                    }
+                let token = jwt_helper.SJwt(req_token);
+                console.log(token);
+                res.status(200).send({
+                    massage: "success login",
+                    auth: data.email,
+                    role: data.role.name,
+                    token
+                });
+            }
         } else {
             res.status(500).send({
-                massage: "failed login, username and password not match"
+                massage: "failed login, wrong password"
             });
         }
     }).catch((error) => {
-        res.status(500).send({
-            massage: error || "Internal server error"
-        });
         console.log(error);
+        res.status(500).send({
+            massage: "failed login, username and password not match"
+        });
     });
+}
+exports.RefreshToken = (req, res) => {
+    const new_token = jwt_helper.Refresh(req.body.refreshtoken);
+    if(!new_token){
+        res.status(500).send({
+            massage: "Error, Token not found"
+        });
+    } else {
+        res.status(200).send({
+            massage: 'success',
+            token: new_token,
+            expires: '1 hours'
+        })
+    }
+}
+exports.VerifyEmail = (req, res) => {
+    let data = users_helper.verify_activation(req.params.verify);
+    if(!data){
+        res.status(500).send({
+            massage: 'error, invalid token'
+        });
+    } else {
+        users.findOne({
+            where: {
+                id: data.id,
+                password: data.password
+            }
+        }).then((result) => {
+            result.status = 'active';
+            result.save();
+            res.status(200).send({
+                massage: 'your email success verifed.'
+            });
+        }).catch((error) => {
+            res.status(500).send({
+                massage: error || "Internal Server Error"
+            })
+        })
+    }
 }
 
 exports.Index = (req, res) => {
-    var { id } = jwt_helper.DJwt(req);
+    const { id } = jwt_helper.DJwt(req);
     users.findOne({
         where: {
             id: id
@@ -113,39 +177,9 @@ exports.Find = (req, res) => {
         })
     });
 }
-const updates = (req,id,res) => {
-    console.log(req);
-    users.findOne({where: {id: id}, include: ['role']}).then((data) => {
-        console.log(data);
-        if(req.body.type == 'info'){
-            data.name = req.body.name;
-            data.email = req.body.email;
-            data.phone = req.body.phone;
-            data.role.name = req.body.role;
-            data.save();
-            res.status(200).send({
-                massage: 'success update info users'
-            });
-        } else if(req.body.type == 'password'){
-            data.password = bcryp.hashSync(req.body.password);
-            data.save();
-            res.status(200).send({
-                massage: 'success change password'
-            });
-        } else {
-            res.status(500).send({
-                massage: "Error"
-            });
-        }
-    }).catch((error) => {
-        console.log(error);
-        res.status(500).send({
-            massage: error.massage || "Internal Server Error"
-        });
-    });
-}
+
 exports.Update = (req, res) => {
-    var { role,id } = jwt_helper.DJwt(req);
+    const { role,id } = jwt_helper.DJwt(req);
     if(!req.body.type){
         res.status(500).send({
             massage: 'error, type value must be added (info/password)'
@@ -160,12 +194,12 @@ exports.Update = (req, res) => {
             });
         }
     } else {
-            updates(req, id, res);
+            users_helper.update(req, id, res);
     }
 }
 
 exports.DeleteFind = (req, res) => {
-    var { role } = jwt_helper.DJwt(req);
+    const { role } = jwt_helper.DJwt(req);
     if(role=="admin"){
         users.destroy({
             where: {
@@ -203,7 +237,11 @@ exports.ResetPassword = (req, res) => {
             console.log(error);
             return error;
         });
-        massage = mail_massage.massage(req.body.email,new_password);
+        mail_massage.email = req.body.email;
+        mail_massage.subject = "Request Reset Password";
+        mail_massage.password = new_password;
+        mail_massage.letter = 'mail.html';
+        massage = mail_massage.massage();
         mail_helper.Mail(req.body.email,mail_massage.subject,massage).then(() => {
             res.status(200).send({
                 massage: 'success',
@@ -216,5 +254,13 @@ exports.ResetPassword = (req, res) => {
             });
         });
 
+    }
+}
+
+exports.Logout = (req, res) => {
+    if(jwt_helper.BJwt(req.body.refreshtoken)){
+        res.status(200).send({
+            massage: 'Success Logout!'
+        });
     }
 }

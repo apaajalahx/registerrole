@@ -15,7 +15,11 @@ module.exports = {
         name: 'admin',
         createdAt: new Date(),
         updatedAt: new Date()
-      }]);
+      },{
+        name: 'member',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }], {});
   },
 
   down: async (queryInterface, Sequelize) => {

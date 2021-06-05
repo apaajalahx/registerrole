@@ -7,10 +7,22 @@ module.exports = (sequelize,Sequelize) => {
                 type: Sequelize.STRING
             },
             phone: {
-                type: Sequelize.BIGINT(15)
+                type: Sequelize.BIGINT
             },
             password: {
                 type: Sequelize.STRING
+            }, 
+            status: {
+                type: Sequelize.ENUM,
+                values: ['active','pending','banned'],
+                defaultValue: 'pending'
+            },
+            rolesid: {
+                type: Sequelize.INTEGER,
+                references : {
+                    model: 'roles',
+                    key: 'id'
+                }
             }
         }
     );

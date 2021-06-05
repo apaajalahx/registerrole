@@ -16,10 +16,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 const db = require('./app/models/index');
-
+/*
 db.sequelize.sync({force:false}).then(()=>{
     console.log("drop and re-sync db");
-});
+});*/
 
 app.get('/', (req, res) => {
     res.send('hello words');
