@@ -100,7 +100,7 @@ exports.RefreshToken = (req, res) => {
         res.status(200).send({
             massage: 'success',
             token: new_token,
-            expires: '20 second'
+            expires: '20 minute'
         })
     }
 }
