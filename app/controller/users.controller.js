@@ -91,7 +91,8 @@ exports.Auth = (req, res) => {
 }
 exports.RefreshToken = (req, res) => {
     const new_token = jwt_helper.Refresh(req.body.refreshtoken);
-    if(!new_token){
+    console.log(new_token);
+    if(new_token==false){
         res.status(500).send({
             massage: "Error, Token not found"
         });

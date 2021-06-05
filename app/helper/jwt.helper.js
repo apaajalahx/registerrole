@@ -23,21 +23,25 @@ exports.SJwt = (data) => {
 }
 
 exports.BJwt = (token) => {
-    refreshTokens = refreshTokens.filter(token => t !== token);
-    return true;
+    return this.refreshTokens = refreshTokens.filter(item => item != token);
 }
 
 exports.Refresh = (token, res) => {
-    console.log(this.refreshTokens.includes([token]));
+    console.log(this.refreshTokens.includes(token));
+    console.log(this.refreshTokens);
     if(!this.refreshTokens.includes(token)){
         return false;
     }
-    jwt.verify(token, Secret.refresh, (err, data) => {
+    return jwt.verify(token, Secret.refresh, (err, data) => {
         if(err) {
+            console.log(err);
             return false;
+        } else {
+            const req_token = {id: data.id, email: data.email, role:data.role};
+            const rtoken = jwt.sign(req_token, Secret.secret, {
+                expiresIn: 120
+            });
+            return rtoken;
         }
-        return new_token = jwt.sign({id:data.id, email:data.email, role:data.role}, Secret.secret, {
-            expiresIn: 120
-        });
     });
 }
