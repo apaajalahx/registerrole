@@ -27,8 +27,8 @@ exports.BJwt = (token) => {
 }
 
 exports.Refresh = (token, res) => {
-    console.log(this.refreshTokens.includes(token));
-    console.log(this.refreshTokens);
+    // console.log(this.refreshTokens.includes(token));
+    // console.log(this.refreshTokens);
     if(!this.refreshTokens.includes(token)){
         return false;
     }
