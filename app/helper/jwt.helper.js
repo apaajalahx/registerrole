@@ -11,7 +11,7 @@ exports.refreshTokens = refreshTokens;
 
 exports.SJwt = (data) => {
     const token = jwt.sign(data, Secret.secret, {
-        expiresIn: 120
+        expiresIn: 1200
     });
     const refreshtoken = jwt.sign(data, Secret.refresh);
     this.refreshTokens.push(refreshtoken);
@@ -39,7 +39,7 @@ exports.Refresh = (token, res) => {
         } else {
             const req_token = {id: data.id, email: data.email, role:data.role};
             const rtoken = jwt.sign(req_token, Secret.secret, {
-                expiresIn: 120
+                expiresIn: 1200
             });
             return rtoken;
         }
